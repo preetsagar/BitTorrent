@@ -1,6 +1,8 @@
 import bencode.Bencode;
 import com.google.gson.Gson;
+import peer.PeerConnection;
 import torrent.Torrent;
+import tracker.Tracker;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,6 +29,20 @@ public class Main {
                 System.out.println("Piece Hashes:");
                 for (byte[] h : t.pieceHashes) {
                     System.out.println(Torrent.hex(h));
+                }
+            }
+            case "peers" -> {
+                Torrent t = Torrent.parse(Path.of(args[1]));
+                for (Tracker.Peer p : Tracker.discoverPeers(t)) {
+                    System.out.println(p);
+                }
+            }
+            case "handshake" -> {
+                Torrent t = Torrent.parse(Path.of(args[1]));
+                String[] hp = args[2].split(":");
+                try (PeerConnection conn = PeerConnection.connect(hp[0], Integer.parseInt(hp[1]))) {
+                    byte[] peerId = conn.handshake(t.infoHash);
+                    System.out.println("Peer ID: " + Torrent.hex(peerId));
                 }
             }
             default -> System.out.println("Unknown command: " + command);
