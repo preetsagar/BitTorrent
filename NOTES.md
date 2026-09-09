@@ -45,7 +45,11 @@
 18. qv6 magnet download piece code done + smoke-tested
 19. dv7 magnet download file  code done + smoke-tested (SHA1 verified)
 
-ALL 19 STAGES IMPLEMENTED. Pushing in batches; tester runs cumulatively (~2 stages/push).
+ALL 19 STAGES IMPLEMENTED + smoke-tested end-to-end against the live tracker.
+Stages 1-13 PASS on CodeCrafters. Stages 14-19 blocked: CodeCrafters stopped
+auto-advancing at PK2 (13) and now says "Mark step as complete in your browser".
+Every push re-runs stages 1-13 and all pass; no failures. Need the user to click
+through the remaining stages in the browser (each push after that should pass).
 
 ## Architecture
 - Main.java: CLI dispatch
