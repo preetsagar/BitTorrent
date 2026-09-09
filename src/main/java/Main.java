@@ -1,46 +1,45 @@
+import bencode.Bencode;
 import com.google.gson.Gson;
-// import com.dampcake.bencode.Bencode; - available if you need it!
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Main {
-  private static final Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
-  public static void main(String[] args) throws Exception {
-    // You can use print statements as follows for debugging, they'll be visible when running tests.
-    System.err.println("Logs from your program will appear here!");
-    
-    String command = args[0];
-    if("decode".equals(command)) {
-      //  TODO: Uncomment the code below to pass the first stage
-      //  String bencodedValue = args[1];
-      //  String decoded;
-      //  try {
-      //    decoded = decodeBencode(bencodedValue);
-      //  } catch(RuntimeException e) {
-      //    System.out.println(e.getMessage());
-      //    return;
-      //  }
-      //  System.out.println(gson.toJson(decoded));
-
-    } else {
-      System.out.println("Unknown command: " + command);
-    }
-
-  }
-
-  static String decodeBencode(String bencodedString) {
-    if (Character.isDigit(bencodedString.charAt(0))) {
-      int firstColonIndex = 0;
-      for(int i = 0; i < bencodedString.length(); i++) { 
-        if(bencodedString.charAt(i) == ':') {
-          firstColonIndex = i;
-          break;
+    public static void main(String[] args) throws Exception {
+        String command = args[0];
+        switch (command) {
+            case "decode" -> {
+                Object decoded = Bencode.decode(args[1]);
+                System.out.println(gson.toJson(jsonReady(decoded)));
+            }
+            default -> System.out.println("Unknown command: " + command);
         }
-      }
-      int length = Integer.parseInt(bencodedString.substring(0, firstColonIndex));
-      return bencodedString.substring(firstColonIndex+1, firstColonIndex+1+length);
-    } else {
-      throw new RuntimeException("Only strings are supported at the moment");
     }
-  }
-  
+
+    /** Recursively turn bencode byte[] strings into Java Strings so Gson emits them as JSON strings. */
+    @SuppressWarnings("unchecked")
+    private static Object jsonReady(Object o) {
+        if (o instanceof byte[] b) {
+            return new String(b, java.nio.charset.StandardCharsets.UTF_8);
+        }
+        if (o instanceof List<?> list) {
+            List<Object> out = new ArrayList<>(list.size());
+            for (Object e : list) {
+                out.add(jsonReady(e));
+            }
+            return out;
+        }
+        if (o instanceof Map<?, ?> map) {
+            Map<String, Object> out = new LinkedHashMap<>();
+            for (Map.Entry<?, ?> e : ((Map<String, Object>) map).entrySet()) {
+                out.put(e.getKey().toString(), jsonReady(e.getValue()));
+            }
+            return out;
+        }
+        return o;
+    }
 }
