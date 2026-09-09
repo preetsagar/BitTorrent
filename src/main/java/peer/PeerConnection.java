@@ -47,6 +47,55 @@ public final class PeerConnection implements AutoCloseable {
         return peerId;
     }
 
+    /** A peer wire protocol message (after the length prefix has been stripped). */
+    public record Message(int id, byte[] payload) {
+    }
+
+    public static final int CHOKE = 0;
+    public static final int UNCHOKE = 1;
+    public static final int INTERESTED = 2;
+    public static final int BITFIELD = 5;
+    public static final int REQUEST = 6;
+    public static final int PIECE = 7;
+    public static final int EXTENDED = 20;
+
+    public void send(int id, byte[] payload) throws IOException {
+        int len = 1 + payload.length;
+        byte[] frame = new byte[4 + len];
+        frame[0] = (byte) (len >>> 24);
+        frame[1] = (byte) (len >>> 16);
+        frame[2] = (byte) (len >>> 8);
+        frame[3] = (byte) len;
+        frame[4] = (byte) id;
+        System.arraycopy(payload, 0, frame, 5, payload.length);
+        out.write(frame);
+        out.flush();
+    }
+
+    /** Reads the next message, transparently skipping keep-alives. */
+    public Message recv() throws IOException {
+        while (true) {
+            int len = in.readInt();
+            if (len == 0) {
+                continue; // keep-alive
+            }
+            int id = in.readUnsignedByte();
+            byte[] payload = new byte[len - 1];
+            in.readFully(payload);
+            return new Message(id, payload);
+        }
+    }
+
+    /** Reads messages until one with {@code expectedId} arrives. */
+    public Message recvExpecting(int expectedId) throws IOException {
+        while (true) {
+            Message m = recv();
+            if (m.id() == expectedId) {
+                return m;
+            }
+        }
+    }
+
     public DataInputStream in() {
         return in;
     }

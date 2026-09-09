@@ -1,9 +1,11 @@
 import bencode.Bencode;
+import client.Client;
 import com.google.gson.Gson;
 import peer.PeerConnection;
 import torrent.Torrent;
 import tracker.Tracker;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -44,6 +46,27 @@ public class Main {
                     byte[] peerId = conn.handshake(t.infoHash);
                     System.out.println("Peer ID: " + Torrent.hex(peerId));
                 }
+            }
+            case "download_piece" -> {
+                // download_piece -o <output> <torrent> <pieceIndex>
+                String output = args[2];
+                Torrent t = Torrent.parse(Path.of(args[3]));
+                int index = Integer.parseInt(args[4]);
+                Client client = new Client(t);
+                byte[] piece;
+                try (PeerConnection conn = client.connectToReadyPeer()) {
+                    piece = client.downloadPiece(conn, index);
+                }
+                Files.write(Path.of(output), piece);
+                System.out.println("Piece " + index + " downloaded to " + output + ".");
+            }
+            case "download" -> {
+                // download -o <output> <torrent>
+                String output = args[2];
+                Torrent t = Torrent.parse(Path.of(args[3]));
+                byte[] file = new Client(t).downloadAll();
+                Files.write(Path.of(output), file);
+                System.out.println("Downloaded " + args[3] + " to " + output + ".");
             }
             default -> System.out.println("Unknown command: " + command);
         }
