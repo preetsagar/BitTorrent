@@ -45,7 +45,16 @@ class BencodeTest {
     }
 
     @Test
-    void decodesNestedDict() {
+    void decodePrefixReportsEndOfValue() {
+        byte[] data = "d8:msg_typei1e5:piecei0ee<INFODICT>".getBytes(java.nio.charset.StandardCharsets.ISO_8859_1);
+        Bencode.Decoded d = Bencode.decodePrefix(data, 0);
+        assertEquals("<INFODICT>", new String(data, d.end(), data.length - d.end(),
+                java.nio.charset.StandardCharsets.ISO_8859_1));
+        assertEquals(1L, ((Map<?, ?>) d.value()).get("msg_type"));
+    }
+
+    @Test
+    void nestedDict() {
         Map<?, ?> d = (Map<?, ?>) Bencode.decode(
                 "d10:inner_dictd4:key16:value14:key2i42e8:list_keyl5:item15:item2i3eeee");
         Map<?, ?> inner = (Map<?, ?>) d.get("inner_dict");
