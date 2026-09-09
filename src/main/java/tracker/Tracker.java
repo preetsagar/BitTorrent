@@ -25,13 +25,22 @@ public final class Tracker {
     }
 
     public static List<Peer> discoverPeers(Torrent torrent) throws IOException, InterruptedException {
-        String url = torrent.announce
-                + "?info_hash=" + urlEncode(torrent.infoHash)
+        return discoverPeers(torrent.announce, torrent.infoHash, torrent.length);
+    }
+
+    /**
+     * Queries the tracker for peers. For magnet links the file length is unknown, so pass
+     * {@code left = 1} as a placeholder (the tracker only needs it to be > 0).
+     */
+    public static List<Peer> discoverPeers(String announce, byte[] infoHash, long left)
+            throws IOException, InterruptedException {
+        String url = announce
+                + "?info_hash=" + urlEncode(infoHash)
                 + "&peer_id=" + urlEncode(PeerId.BYTES)
                 + "&port=6881"
                 + "&uploaded=0"
                 + "&downloaded=0"
-                + "&left=" + torrent.length
+                + "&left=" + left
                 + "&compact=1";
 
         HttpResponse<byte[]> response = HttpClient.newHttpClient().send(

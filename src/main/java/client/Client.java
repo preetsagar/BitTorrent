@@ -29,9 +29,14 @@ public final class Client {
         PeerConnection conn = PeerConnection.connect(p.ip(), p.port());
         conn.handshake(torrent.infoHash);
         conn.recvExpecting(PeerConnection.BITFIELD);
+        prepare(conn);
+        return conn;
+    }
+
+    /** Sends "interested" and waits for "unchoke" so the connection can serve piece requests. */
+    public void prepare(PeerConnection conn) throws IOException {
         conn.send(PeerConnection.INTERESTED, new byte[0]);
         conn.recvExpecting(PeerConnection.UNCHOKE);
-        return conn;
     }
 
     public long pieceLength(int index) {
@@ -68,14 +73,19 @@ public final class Client {
     }
 
     public byte[] downloadAll() throws IOException, InterruptedException {
-        byte[] file = new byte[Math.toIntExact(torrent.length)];
         try (PeerConnection conn = connectToReadyPeer()) {
-            int offset = 0;
-            for (int i = 0; i < torrent.pieceHashes.size(); i++) {
-                byte[] piece = downloadPiece(conn, i);
-                System.arraycopy(piece, 0, file, offset, piece.length);
-                offset += piece.length;
-            }
+            return downloadAllOver(conn);
+        }
+    }
+
+    /** Downloads every piece in order over an already-ready connection. */
+    public byte[] downloadAllOver(PeerConnection conn) throws IOException {
+        byte[] file = new byte[Math.toIntExact(torrent.length)];
+        int offset = 0;
+        for (int i = 0; i < torrent.pieceHashes.size(); i++) {
+            byte[] piece = downloadPiece(conn, i);
+            System.arraycopy(piece, 0, file, offset, piece.length);
+            offset += piece.length;
         }
         return file;
     }

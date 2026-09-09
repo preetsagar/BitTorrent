@@ -24,13 +24,23 @@ public final class Bencode {
     }
 
     public static Object decode(byte[] data) {
-        Bencode b = new Bencode(data);
-        Object value = b.parse();
-        return value;
+        return new Bencode(data).parse();
     }
 
     public static Object decode(String s) {
         return decode(s.getBytes(StandardCharsets.ISO_8859_1));
+    }
+
+    /** A decoded value plus the index one past its last byte in the source. */
+    public record Decoded(Object value, int end) {
+    }
+
+    /** Decodes the single bencoded value that starts at {@code start}. */
+    public static Decoded decodePrefix(byte[] data, int start) {
+        Bencode b = new Bencode(data);
+        b.pos = start;
+        Object v = b.parse();
+        return new Decoded(v, b.pos);
     }
 
     public static String asString(Object o) {

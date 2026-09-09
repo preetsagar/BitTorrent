@@ -37,13 +37,18 @@ public final class Torrent {
     @SuppressWarnings("unchecked")
     public static Torrent parse(byte[] data) {
         Map<String, Object> root = (Map<String, Object>) Bencode.decode(data);
-        Map<String, Object> info = (Map<String, Object>) root.get("info");
-
         String announce = Bencode.asString(root.get("announce"));
+        return fromInfoDict(announce, Bencode.rawValueOfKey(data, "info"));
+    }
+
+    /** Builds a Torrent from a tracker URL and the raw bencoded info dictionary (used for magnet links). */
+    @SuppressWarnings("unchecked")
+    public static Torrent fromInfoDict(String announce, byte[] infoDict) {
+        Map<String, Object> info = (Map<String, Object>) Bencode.decode(infoDict);
         String name = Bencode.asString(info.get("name"));
         long length = (Long) info.get("length");
         long pieceLength = (Long) info.get("piece length");
-        byte[] infoHash = sha1(Bencode.rawValueOfKey(data, "info"));
+        byte[] infoHash = sha1(infoDict);
 
         byte[] pieces = (byte[]) info.get("pieces");
         List<byte[]> pieceHashes = new ArrayList<>();

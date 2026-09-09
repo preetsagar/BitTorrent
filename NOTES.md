@@ -25,25 +25,27 @@
 - Stage funcs in internal/stage_*.go
 
 ## Stages (slug -> desc)
-1. ns2  bencode string        DONE (passed)
-2. eb4  bencode int           code done (decoder handles it)
-3. ah1  bencode list          code done
-4. mn6  bencode dict          code done
-5. ow9  parse .torrent (info: Tracker URL, Length)
-6. rb2  info hash (sha1 of bencoded info dict)
-7. bf7  piece hashes (Piece Length + Piece Hashes list)
-8. fi9  discover peers (tracker GET)
-9. ca4  handshake
-10. nd2 download piece
-11. jv8 download file
-12. hw0 parse magnet link
-13. pk2 magnet reserved bit
-14. xi4 magnet send extended handshake
-15. jk6 magnet receive extended handshake
-16. ns5 magnet request metadata
-17. zh1 magnet send metadata
-18. qv6 magnet download piece
-19. dv7 magnet download file
+1. ns2  bencode string        PASSED
+2. eb4  bencode int           PASSED
+3. ah1  bencode list          PASSED
+4. mn6  bencode dict          PASSED
+5. ow9  parse .torrent        PASSED
+6. rb2  info hash             PASSED
+7. bf7  piece hashes          PASSED
+8. fi9  discover peers        PASSED
+9. ca4  handshake             PASSED
+10. nd2 download piece        PASSED
+11. jv8 download file         code done + smoke-tested
+12. hw0 parse magnet link     code done + smoke-tested
+13. pk2 magnet reserved bit   code done
+14. xi4 magnet send ext hs    code done
+15. jk6 magnet recv ext hs    code done + smoke-tested (Peer Metadata Extension ID)
+16. ns5 magnet request meta   code done
+17. zh1 magnet send meta      code done + smoke-tested (magnet_info full)
+18. qv6 magnet download piece code done + smoke-tested
+19. dv7 magnet download file  code done + smoke-tested (SHA1 verified)
+
+ALL 19 STAGES IMPLEMENTED. Pushing in batches; tester runs cumulatively (~2 stages/push).
 
 ## Architecture
 - Main.java: CLI dispatch
