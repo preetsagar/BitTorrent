@@ -5,20 +5,30 @@
 - Run: `./your_program.sh <cmd> <args>`  (java --enable-preview -jar ...)
 - Tests: JUnit 5 via surefire, run in `mvn test` / `package`.
 
-## Remotes
-- `origin` = https://git.codecrafters.io/4922ecac696e7637  (this IS the codecrafters remote)
-- No separate GitHub/`codecrafters` remote exists. Push: `git push origin master`.
-- "Mark step as complete" in push output = stage passed.
+## Remotes / branch
+- Local branch: `main`
+- `origin`       = git@github.com:preetsagar/BitTorrent.git  (GitHub mirror)
+- `codecrafters` = https://git.codecrafters.io/4922ecac696e7637
+- CodeCrafters ONLY runs tests on its `master` branch.
+- Push sequence per stage:
+    git push origin main
+    git push codecrafters main:master
+- "Test passed. Congrats!" + "Mark step as complete" in push output = stage passed.
+- Tester runs only the current uncompleted stage per push; need a new commit each push.
+
+## Local build note
+- Local default JDK is 26; CodeCrafters uses java-25. Build locally with:
+    export JAVA_HOME=/Users/preetsagar/Library/Java/JavaVirtualMachines/ms-25.0.4.1/Contents/Home
 
 ## Tester repo
 - github.com/codecrafters-io/bittorrent-tester  (cloned to /tmp/bittorrent-tester)
 - Stage funcs in internal/stage_*.go
 
 ## Stages (slug -> desc)
-1. ns2  bencode string        DONE?
-2. eb4  bencode int
-3. ah1  bencode list
-4. mn6  bencode dict
+1. ns2  bencode string        DONE (passed)
+2. eb4  bencode int           code done (decoder handles it)
+3. ah1  bencode list          code done
+4. mn6  bencode dict          code done
 5. ow9  parse .torrent (info: Tracker URL, Length)
 6. rb2  info hash (sha1 of bencoded info dict)
 7. bf7  piece hashes (Piece Length + Piece Hashes list)
