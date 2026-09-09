@@ -51,3 +51,4 @@ ALL 19 STAGES IMPLEMENTED. Pushing in batches; tester runs cumulatively (~2 stag
 - Main.java: CLI dispatch
 - bencode/Bencode.java: decode (+ encode later for info hash)
 - torrent/Torrent.java: parse .torrent
+
