@@ -37,6 +37,30 @@ public final class Bencode {
         return new String((byte[]) o, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Returns the raw bencoded bytes of {@code key}'s value in the top-level dict,
+     * exactly as they appear in {@code data} (needed to hash the info dict).
+     */
+    public static byte[] rawValueOfKey(byte[] data, String key) {
+        Bencode b = new Bencode(data);
+        if (b.data[b.pos] != 'd') {
+            throw new IllegalArgumentException("Top-level value is not a dictionary");
+        }
+        b.pos++;
+        while (b.data[b.pos] != 'e') {
+            String k = new String(b.parseString(), StandardCharsets.UTF_8);
+            int start = b.pos;
+            b.parse();
+            int end = b.pos;
+            if (k.equals(key)) {
+                byte[] out = new byte[end - start];
+                System.arraycopy(data, start, out, 0, end - start);
+                return out;
+            }
+        }
+        throw new IllegalArgumentException("Key not found: " + key);
+    }
+
     private Object parse() {
         byte c = data[pos];
         if (c == 'i') {
